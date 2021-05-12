@@ -462,7 +462,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   unsigned pending_update_scope_ : 2;
   bool draws_background_onto_content_layer_;
 
-  Color inherited_background_color = Color::kTransparent;
+  Color inherited_background_color_ = Color::kTransparent;
   friend class CompositedLayerMappingTest;
 };
 

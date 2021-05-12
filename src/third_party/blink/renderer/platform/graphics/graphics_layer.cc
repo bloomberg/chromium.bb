@@ -614,9 +614,9 @@ void GraphicsLayer::SetContentsOpaqueForText(bool opaque) {
   CcLayer().SetContentsOpaqueForText(opaque);
 }
 
-void GraphicsLayer::setDefaultLCDBackgroundColor(const Color& color) {
-  layer_->SetDefaultLCDBackgroundColor(color.Rgb());
-  layer_->SetContentsOpaqueForLCDText(color.Alpha() == 255);
+void GraphicsLayer::SetDefaultLCDBackgroundColor(const Color& color) {
+  CcLayer().SetDefaultLCDBackgroundColor(color.Rgb());
+  CcLayer().SetContentsOpaqueForLCDText(color.Alpha() == 255);
 }
 
 void GraphicsLayer::SetPaintsHitTest(bool paints_hit_test) {
