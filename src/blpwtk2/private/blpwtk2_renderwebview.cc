@@ -976,12 +976,18 @@ void RenderWebView::updateGeometry()
     d_compositor->Resize(size);
 
     blink::VisualProperties params = {};
-    params.new_size = size;
+
+    GetNativeViewScreenInfo(&params.screen_info, d_hwnd.get());
+
+    auto dip_size = gfx::Size { size.width()  / params.screen_info.device_scale_factor,
+                                size.height() / params.screen_info.device_scale_factor  };
+
+    params.new_size = dip_size;
+    params.visible_viewport_size = dip_size;
+
     params.compositor_viewport_pixel_rect = gfx::Rect(size);
-    params.visible_viewport_size = size;
     params.display_mode = blink::mojom::DisplayMode::kBrowser;
     params.local_surface_id = d_compositor->GetLocalSurfaceId();
-    GetNativeViewScreenInfo(&params.screen_info, d_hwnd.get());
 
     if (blink_widget_) {
         blink_widget_->UpdateVisualProperties(params);
