@@ -1384,6 +1384,8 @@ int RenderWebView::setParent(NativeView parent)
     DCHECK(Statics::isInApplicationMainThread());
     DCHECK(d_hwnd.is_valid());
 
+    d_proxy->setParent(parent);
+
     auto shown = d_shown;
 
     // The window is losing its parent:
@@ -2218,7 +2220,7 @@ void RenderWebView::DragSourceEnded(
   if (blink_frame_widget_) {
     blink_frame_widget_->DragSourceEndedAt(
         ConvertWindowPointToViewport(client_pt), screen_pt, drag_operation);
-  
+
   }
 }
 
