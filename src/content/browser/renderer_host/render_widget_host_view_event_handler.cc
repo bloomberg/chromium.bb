@@ -129,6 +129,7 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
       enable_consolidated_movement_(
           base::FeatureList::IsEnabled(features::kConsolidatedMovementXY)),
       host_(host),
+      has_capture_from_mouse_down_(false),
       host_view_(host_view),
       delegate_(delegate),
       mouse_wheel_phase_handler_(host_view),
@@ -497,7 +498,7 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 
       // Ensure that we get keyboard focus on mouse down as a plugin window may
       // have grabbed keyboard focus.
-      if (event->type() == ui::ET_MOUSE_PRESSED)
+      if (event->type() == ui::ET_MOUSE_PRESSED && host_->ShouldSetKeyboardFocusOnMouseDown())
         SetKeyboardFocus();
     }
   }
@@ -505,10 +506,13 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       window_->SetCapture();
+      has_capture_from_mouse_down_ = true;
       break;
     case ui::ET_MOUSE_RELEASED:
-      if (!delegate_->NeedsMouseCapture())
+      if (!delegate_->NeedsMouseCapture()) {
+        has_capture_from_mouse_down_ = false;
         window_->ReleaseCapture();
+      }
       break;
     default:
       break;
@@ -855,7 +859,7 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
         }
         // Ensure that we get keyboard focus on mouse down as a plugin window
         // may have grabbed keyboard focus.
-        if (event->type() == ui::ET_MOUSE_PRESSED)
+        if (event->type() == ui::ET_MOUSE_PRESSED && host_->ShouldSetKeyboardFocusOnMouseDown())
           SetKeyboardFocus();
       }
 
@@ -986,6 +990,26 @@ bool RenderWidgetHostViewEventHandler::MatchesSynthesizedMovePosition(
 }
 
 void RenderWidgetHostViewEventHandler::SetKeyboardFocus() {
+  // blpwtk2: The next few lines were removed by
+  // https://source.chromium.org/chromium/chromium/src/+/5af4e86a
+  // because the TSF on Windows already focus the top-level window when it
+  // should receive keyboard focus. This works for the Chrome browser because
+  // the top-level window is responsible for handling all input events. For
+  // blpwtk2, webviews may be embedded as a child window and so this assumption
+  // no longer holds. We must explicitly call SetFocus on this child window
+  // instead of relying on TSF to do it.
+
+#if defined(OS_WIN)
+  if (window_ && window_->delegate()->CanFocus()) {
+    aura::WindowTreeHost* host = window_->GetHost();
+    if (host) {
+      gfx::AcceleratedWidget hwnd = host->GetAcceleratedWidget();
+      if (!(::GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_NOACTIVATE))
+        ::SetFocus(hwnd);
+    }
+  }
+#endif
+
   // TODO(wjmaclean): can host_ ever be null?
   if (host_ && set_focus_on_mouse_down_or_key_event_) {
     set_focus_on_mouse_down_or_key_event_ = false;
