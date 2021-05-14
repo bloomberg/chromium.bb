@@ -46,6 +46,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     kActiveSuggestionMarkerIndex,
     kSuggestionMarkerIndex,
     kTextFragmentMarkerIndex,
+    kHighlightMarkerIndex,
     kMarkerTypeIndexesCount
   };
 
@@ -57,6 +58,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     kActiveSuggestion = 1 << kActiveSuggestionMarkerIndex,
     kSuggestion = 1 << kSuggestionMarkerIndex,
     kTextFragment = 1 << kTextFragmentMarkerIndex,
+    kHighlight = 1 << kHighlightMarkerIndex
   };
 
   class MarkerTypesIterator
