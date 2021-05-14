@@ -684,6 +684,7 @@ HANDLE spawnProcess()
         cmdline.append(" --custom-tooltip");
     }
 
+<<<<<<< HEAD
 
 
     // patch section: renderer ui
@@ -851,6 +852,7 @@ int main(int, const char**)
                 sprintf_s(buf, sizeof(buf), "%S", argv[i]);
                 g_url = buf;
             }
+<<<<<<< HEAD
 
 
 
@@ -858,6 +860,10 @@ int main(int, const char**)
 
 
 
+||||||| parent of 6ebc6a4e91456... Add patch sections for dpi awareness
+=======
+            //patch section: dpi awareness
+>>>>>>> 6ebc6a4e91456... Add patch sections for dpi awareness
         }
 
         ::LocalFree(argv);
@@ -896,12 +902,18 @@ int main(int, const char**)
 
     blpwtk2::ToolkitCreateParams toolkitParams;
 
+<<<<<<< HEAD
 
 
     // patch section: dpi awareness
 
 
 
+||||||| parent of 6ebc6a4e91456... Add patch sections for dpi awareness
+=======
+    // patch section: dpi awareness
+
+>>>>>>> 6ebc6a4e91456... Add patch sections for dpi awareness
     if ((!isProcessHost || host == blpwtk2::ThreadMode::RENDERER_MAIN) &&
         (g_in_process_renderer || !hostChannel.empty())) {
         toolkitParams.setThreadMode(blpwtk2::ThreadMode::RENDERER_MAIN);
@@ -927,12 +939,20 @@ int main(int, const char**)
         toolkitParams.disableInProcessRenderer();
     }
 
+<<<<<<< HEAD
 
 
     // patch section: renderer ui
 
 
 
+||||||| parent of 6ebc6a4e91456... Add patch sections for dpi awareness
+=======
+
+    // patch section: renderer ui
+
+
+>>>>>>> 6ebc6a4e91456... Add patch sections for dpi awareness
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());
     toolkitParams.enablePrintBackgroundGraphics();
     toolkitParams.setDictionaryPath(g_dictDir);
