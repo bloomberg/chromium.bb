@@ -6741,6 +6741,14 @@ void WebContentsImpl::SetShowingContextMenu(bool showing) {
   }
 }
 
+void WebContentsImpl::DevToolsAgentHostAttached() {
+  delegate_->DevToolsAgentHostAttached(this);
+}
+
+void WebContentsImpl::DevToolsAgentHostDetached() {
+  delegate_->DevToolsAgentHostDetached(this);
+}
+
 void WebContentsImpl::ClearFocusedElement() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::ClearFocusedElement");
   if (auto* frame = GetFocusedFrame())
