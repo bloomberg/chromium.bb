@@ -56,6 +56,12 @@ HANDLE g_hJob;
 MSG g_msg;
 bool g_isInsideEventLoop;
 
+
+
+// patch section: dpi awareness
+
+
+
 #define BUTTON_WIDTH 72
 #define FIND_LABEL_WIDTH (BUTTON_WIDTH*3/4)
 #define FIND_ENTRY_WIDTH (BUTTON_WIDTH*6/4)
@@ -678,6 +684,15 @@ HANDLE spawnProcess()
         cmdline.append(" --custom-tooltip");
     }
 
+
+
+    // patch section: renderer ui
+
+
+    // patch section: dpi awareness
+
+
+
     // It seems like CreateProcess wants a char* instead of
     // a const char*.  So we need to make a copy to a modifiable
     // buffer.
@@ -836,6 +851,13 @@ int main(int, const char**)
                 sprintf_s(buf, sizeof(buf), "%S", argv[i]);
                 g_url = buf;
             }
+
+
+
+            //patch section: dpi awareness
+
+
+
         }
 
         ::LocalFree(argv);
@@ -874,6 +896,12 @@ int main(int, const char**)
 
     blpwtk2::ToolkitCreateParams toolkitParams;
 
+
+
+    // patch section: dpi awareness
+
+
+
     if ((!isProcessHost || host == blpwtk2::ThreadMode::RENDERER_MAIN) &&
         (g_in_process_renderer || !hostChannel.empty())) {
         toolkitParams.setThreadMode(blpwtk2::ThreadMode::RENDERER_MAIN);
@@ -898,6 +926,12 @@ int main(int, const char**)
         toolkitParams.setThreadMode(blpwtk2::ThreadMode::ORIGINAL);
         toolkitParams.disableInProcessRenderer();
     }
+
+
+
+    // patch section: renderer ui
+
+
 
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());
     toolkitParams.enablePrintBackgroundGraphics();
