@@ -931,6 +931,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void DidSplitTextNode(const Text& old_node);
 
   LocalDOMWindow* domWindow() const { return dom_window_; }
+  void SetDOMWindow(LocalDOMWindow* dom_window) { dom_window_ = dom_window; }
 
   // Helper functions for forwarding LocalDOMWindow event related tasks to the
   // LocalDOMWindow if it exists.
