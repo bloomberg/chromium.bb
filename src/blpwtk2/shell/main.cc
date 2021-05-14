@@ -1181,6 +1181,16 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
     case WM_SIZE:
         shell->resizeSubViews();
         break;
+    case WM_DPICHANGED:
+        RECT* const prcNewWindow = (RECT*)lParam;
+        SetWindowPos(hwnd,
+            NULL,
+            prcNewWindow ->left,
+            prcNewWindow ->top,
+            prcNewWindow->right - prcNewWindow->left,
+            prcNewWindow->bottom - prcNewWindow->top,
+            SWP_NOZORDER | SWP_NOACTIVATE);
+        break;
     }
 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
