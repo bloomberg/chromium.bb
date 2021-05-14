@@ -9876,6 +9876,11 @@ class V8_EXPORT V8 {
   static void InitializeExternalStartupData(const char* directory_path);
   static void InitializeExternalStartupDataFromFile(const char* snapshot_blob);
 
+
+  // Return the handle handle to the Win32 heap used by the v8 module's C
+  // runtime system.
+  static intptr_t GetHeapHandle();
+
   /**
    * Sets the v8::Platform to use. This should be invoked before V8 is
    * initialized.
