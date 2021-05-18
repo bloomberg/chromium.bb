@@ -990,6 +990,7 @@ void RenderWebView::updateGeometry()
     params.local_surface_id = d_compositor->GetLocalSurfaceId();
 
     if (blink_widget_) {
+        params.is_fullscreen_granted = d_is_fullscreen_entered;
         blink_widget_->UpdateVisualProperties(params);
     }
 }
@@ -1701,6 +1702,7 @@ void RenderWebView::showContextMenu(
 #if defined(BLPWTK2_FEATURE_FULLSCREEN_MODE)
 void RenderWebView::enterFullscreenMode(WebView *source)
 {
+    d_is_fullscreen_entered = true;
     if (d_delegate) {
         d_delegate->enterFullscreenMode(source);
     }
@@ -1708,6 +1710,7 @@ void RenderWebView::enterFullscreenMode(WebView *source)
 
 void RenderWebView::exitFullscreenMode(WebView *source)
 {
+    d_is_fullscreen_entered = false;
     if (d_delegate) {
         d_delegate->exitFullscreenMode(source);
     }
