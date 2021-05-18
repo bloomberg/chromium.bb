@@ -44,6 +44,7 @@ WebViewHostObserver* Statics::webViewHostObserver = 0;
 ToolkitDelegate *Statics::toolkitDelegate = nullptr;
 
 static int lastRoutingId = 0;
+base::FilePath Statics::tempFolderPath = base::FilePath();
 
 void Statics::initApplicationMainThread()
 {

@@ -97,7 +97,7 @@ BrowserContextImpl::BrowserContextImpl(const std::string& dataDir)
 
         // allow IO during creation of temporary directory
         base::ThreadRestrictions::ScopedAllowIO allowIO;
-        base::CreateNewTempDirectory(L"blpwtk2_", &path);
+        base::CreateTemporaryDirInDir(Statics::tempFolderPath, L"blpwtk2_", &path);
     }
 
     d_requestContextGetter =
