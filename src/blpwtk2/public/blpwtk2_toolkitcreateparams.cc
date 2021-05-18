@@ -69,7 +69,7 @@ struct ToolkitCreateParamsImpl final
     ToolkitDelegate* d_delegate;
     bool d_rendererIOThreadEnabled;
     bool d_isNativeViewManipulationAsync;
-
+    std::string d_tempFolderPath;
 
 
     // patch section: discardable sharedmem
@@ -182,6 +182,12 @@ void ToolkitCreateParams::setLogMessageHandler(LogMessageHandler handler)
 void ToolkitCreateParams::setConsoleLogMessageHandler(ConsoleLogMessageHandler handler)
 {
     d_impl->d_consoleLogMessageHandler = handler;
+}
+
+void ToolkitCreateParams::setTempFolderPath(const StringRef& path)
+{
+    d_impl->d_tempFolderPath.assign(path.data(),
+                                    path.length());
 }
 
 void ToolkitCreateParams::setWinProcExceptionFilter(WinProcExceptionFilter filter)
@@ -480,6 +486,10 @@ bool ToolkitCreateParams::isRendererIOThreadEnabled() const
     return d_impl->d_rendererIOThreadEnabled;
 }
 
+StringRef ToolkitCreateParams::getTempFolderPath() const
+{
+    return d_impl->d_tempFolderPath;
+}
 
 
 // patch section: memory diagnostics

@@ -29,6 +29,7 @@
 
 #include <base/memory/scoped_refptr.h>
 #include <base/threading/platform_thread.h>
+#include <base/files/file_path.h>
 
 namespace base {
 class MessageLoop;
@@ -125,6 +126,7 @@ struct Statics {
     static int getUniqueRoutingId();
 
     static bool isTerminating;
+    static base::FilePath tempFolderPath;
 };
 
 }  // close namespace blpwtk2
