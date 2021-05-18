@@ -129,6 +129,7 @@ class RenderWebView final : public WebView
     bool d_hasParent = false;
     bool d_shown = false, d_visible = false;
     gfx::Rect d_geometry;
+    bool d_is_fullscreen_entered = false;
 
     // Track the 'content::RenderWidget':
     bool d_gotRenderViewInfo = false;
